@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name=viewport content=width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no />
+<title>Mio</title>
+<link rel='stylesheet' href='static/css/font-awesome.min.css'>
+<link rel="stylesheet" href="static/css/reset.min.css">
+<link rel="stylesheet" href="static/css/style.css">
+</head>
+<body>
+<!--<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>-->
+<!--<script src="https://unpkg.com/axios/dist/axios.min.js"></script>-->
+<script src="static/js/vue.global.js"></script>
+<script src="static/js/axios.min.js"></script>
+<div id="app" class="container">
+    <div class="chat">
+	<div class="chat1 container1">
+	      <div class="chat-header clearfix">
+        <img src="static/picture/t1.png" alt="avatar">
+        <div class="chat-about">
+          <div class="chat-with">Mio</div>
+          <div class="chat-num-messages">有好感的智能机器人</div>
+        </div></div></div>
+	  <div class="chat-header clearfix"></div>
+    <scroll-view scroll-with-animation scroll-y="true" style="width: 100%;">
+        <view id="okk" scroll-with-animation>
+            <view v-for="(x,i) in msgList" :key="i">
+<div v-if="x.my" class="chat-history">
+<div class="clearfix">
+<div class="message-data align-right">
+ &nbsp; &nbsp;
+<span class="message-data-name" >我</span> <i class="fa fa-circle me"></i>
+</div><div class="message other-message float-right">
+<text>{{x.msg}}</text></div></div></div>
+<div v-if="!x.my" class="chat-history">
+        <ul>
+          <li>
+            <div class="message-data">
+              <span class="message-data-name"><i class="fa fa-circle online"></i> Mio</span>
+            </div>
+            <div class="message my-message">
+            <text>{{x.msg}}</text>
+            </div>
+          </li>
+        </ul>
+</div>
+</view>
+<view style="height: 130rpx;">
+</view></view>
+</scroll-view>
+    <div class="chat-message clearfix"><form>
+            <input v-model="msg" type="text" @confirm="sendMsg" confirm-type="search"
+                placeholder-class="my-neirong-sm" placeholder="简短的描述问题" rows="3">
+            <button @click="sendMsg" :disabled="msgLoad">{{sentext}}</button>
+	</form></div>
+	</div></div>
+<script>
+    const { createApp } = Vue
+    createApp({
+        data() {
+            return {
+                api: 'API填在这里',
+                msgLoad: false,
+                anData: {},
+                sentext: '发送',
+
+                animationData: {},
+                showTow: false,
+                msgList: [{
+                    my: false,
+                    msg: "我是智能机器人Mio，可以解答您的疑惑"
+                }],
+                msgContent: "",
+                msg: ""
+            }
+        },
+        methods: {
+            sendMsg() {
+
+                // 消息为空不做任何操作
+                if (this.msg == "") {
+                    return 0;
+                }
+                this.sentext = '思考中 请稍等'
+                this.msgList.push({
+                    "msg": this.msg,
+                    "my": true
+                })
+                console.log(this.msg);
+                this.msgContent += ('YOU:' + this.msg + "\n")
+                this.msgLoad = true
+                // 清除消息
+                this.msg = ""
+                axios.post('https://api.openai.com/v1/completions', {
+                    prompt: this.msgContent, max_tokens: 2048, model: "text-davinci-003"
+                }, {
+                    headers: { 'content-type': 'application/json', 'Authorization': 'Bearer ' + this.api }
+                }).then(res => {
+                    console.log(res);
+                    let text = res.data.choices[0].text.replace("openai:", "").replace("openai：", "").replace(/^\n|\n$/g, "")
+                    console.log(text);
+                    this.msgList.push({
+                        "msg": text,
+                        "my": false
+                    })
+                    this.msgContent += (text + "\n")
+                    this.msgLoad = false
+                    this.sentext = '发送'
+                })
+
+            },
+
+
+        }
+    }).mount('#app')
+</script>
+</body>
+</html>
